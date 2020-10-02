@@ -8,9 +8,12 @@ import com.tasks.usertaskweb.Exceptions.TaskUpdateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.tasks.usertaskweb.entities.Task;
 import com.tasks.usertaskweb.repos.TaskRepository;
+
+import javax.servlet.http.HttpServletResponse;
 
 
 @RestController
@@ -21,37 +24,46 @@ public class TaskController {
 	Logger logger = LoggerFactory.getLogger(TaskController.class);
 	
 	@RequestMapping(method=RequestMethod.GET,value="/Tasks")
-	public List<Task> getTasks  () throws TaskGettingException {
+	@ResponseBody
+	public List<Task> getTasks  (HttpServletResponse response) throws TaskGettingException {
 		List<Task> tasks = null;
 		try{
 			tasks = taskRepo.getAllTasks();
+			response.setStatus(HttpStatus.OK.value());
+			response.setHeader("LOCATION","http://localhost/Tasks");
 		} catch (Exception exception) {
 			logger.error("Can not get all tasks from database");
 			throw new TaskGettingException("Cannot read tasks");
 		}
-		logger.info("Getting All tasks from Database");
+		logger.info("All tasks was received successfully");
 		return tasks;
 		
 	}
 	@RequestMapping(method=RequestMethod.GET,value="/Tasks/{id}")
-	public Task getTaskById( @PathVariable("id")  int id) throws TaskGettingException {
+	@ResponseBody
+	public Task getTaskById( @PathVariable("id")  int id,HttpServletResponse response) throws TaskGettingException {
 		Task task = null;
 		try {
 			task = taskRepo.findById(id).get();
+			response.setHeader("LOCATION","http://localhost/Tasks/"+id);
+			response.setStatus(HttpStatus.OK.value());
 
 		} catch(Exception exception) {
 			logger.error("Can not get task with id = "+ id +" from database");
 			throw new TaskGettingException("Cannot get task with id "+ id +" from database" );
 		}
 
-		logger.info("Getting task with id = "+ id +" from Database");
+		logger.info(" Task with id = "+ id +" got extracted from the Database");
 		return task;
 	}
 	@RequestMapping(method=RequestMethod.POST, value="/Tasks", produces = "application/json")
-	public void insert(@RequestBody Task task) throws TaskUpdateException {
+	@ResponseBody
+	public void insert(@RequestBody Task task,HttpServletResponse response) throws TaskUpdateException {
 
 		try{
 			taskRepo.save(task);
+			response.setHeader("LOCATION","http://localhost/Tasks");
+			response.setStatus(HttpStatus.CREATED.value());
 		} catch (Exception exception){
 			logger.error("Insertion of the new task failed");
 			throw new TaskUpdateException("can not insert task with id= " + task.getId()+ " into the database");
@@ -61,10 +73,14 @@ public class TaskController {
 	}
 
 	@RequestMapping(method=RequestMethod.PUT, value="/Tasks/{id}", produces = "application/json")
-	public void update(@RequestBody Task task,@PathVariable ("id") int id) throws TaskGettingException, TaskUpdateException {
+	@ResponseBody
+	public void update(@RequestBody Task task,HttpServletResponse response,@PathVariable ("id") int id) throws TaskGettingException, TaskUpdateException {
 		Task original_Task = null;
 		try {
 			original_Task = taskRepo.findById(id).get();
+			response.setHeader("LOCATION","http://localhost/Tasks/"+id);
+			response.setStatus(HttpStatus.CREATED.value());
+
 		} catch (Exception exception) {
 			logger.error("Can not find the task = "+id+" in the database");
 			throw new TaskGettingException("Connot find task with id " + id + " in the database");
@@ -86,10 +102,13 @@ public class TaskController {
 	}
 
 	@RequestMapping(method=RequestMethod.DELETE, value="/Tasks/{id}", produces = "application/json")
-	public void delete(@PathVariable("id")  int id) throws TaskDeleteException {
+	@ResponseBody
+	public void delete(HttpServletResponse response,@PathVariable("id")  int id) throws TaskDeleteException {
 
 		try{
 			taskRepo.deleteById(id);
+			response.setHeader("LOCATION","http://localhost/Tasks/"+id);
+			response.setStatus(HttpStatus.NO_CONTENT.value());
 		} catch (Exception exception) {
 			logger.error("Can not delete task with id = "+ id +" from the database");
 			throw new TaskDeleteException(" Cannot delete task with id " +id+ " from the database");

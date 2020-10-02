@@ -9,13 +9,13 @@ import com.tasks.usertaskweb.Exceptions.UserUpdateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import com.tasks.usertaskweb.entities.User;
 import com.tasks.usertaskweb.repos.UserRepository;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 public class UserController {
@@ -25,32 +25,36 @@ public class UserController {
 	Logger logger = LoggerFactory.getLogger(UserController.class);
 	
 	@RequestMapping(method=RequestMethod.GET,value="/Users")
-
-	public List<User> getUsers () throws Exception {
+	@ResponseBody
+	public List<User> getUsers (HttpServletResponse response) throws Exception {
 		List<User> users = null;
 		try {
 			users = userRepo.getAllUsers();
+			response.setStatus(HttpStatus.OK.value());
+			response.setHeader("LOCATION","http://localhost/Users");
 		} catch (Exception exception) {
 			logger.error("Can not get all users from database");
 			throw new UserControllerException("Cannot get users");
 		}
-		logger.info("Getting all users from Database");
+		logger.info("List of Users have been got from the database");
 		return users;
 
 		
 
 	}
 	@RequestMapping(method=RequestMethod.GET,value="/Users/{id}")
-
-	public User getUserById(@PathVariable int id) throws UserControllerException {
+	@ResponseBody
+	public User getUserById(@PathVariable int id,HttpServletResponse response) throws UserControllerException {
 		User user = null;
 		try {
 			user = userRepo.findById(id).get();
+			response.setStatus(HttpStatus.OK.value());
+			response.setHeader("LOCATION","http://localhost/Users/"+id);
 		} catch (Exception exception){
 			logger.error("Can not get user with id = "+ id +" from database");
 			throw new UserControllerException("Cannot find the user with id = " + id +" in database");
 		}
-		logger.info("Getting task with id = "+ id +" from Database");
+		logger.info(" User with id = "+ id +" got extracted from the Database");
 		return user;
 
 
@@ -59,9 +63,15 @@ public class UserController {
 	}
 	
 	@RequestMapping(method=RequestMethod.POST, value="/Users", produces = "application/json")
-	public void insert(@RequestBody User user) throws UserUpdateException {
+	@ResponseBody
+	public void insert(@RequestBody User user,HttpServletResponse response) throws UserUpdateException {
+
 		try{
 			userRepo.save(user);
+			response.setStatus(HttpStatus.CREATED.value());
+			response.setHeader("LOCATION","http://localhost/Users");
+
+
 		} catch (Exception exception){
 			logger.error("Insertion of the new user failed");
 			throw new UserUpdateException("Cannot update user with name = "+ user.getName() +" and id = "+user.getId()+" to the database");
@@ -71,11 +81,14 @@ public class UserController {
 	}
 	
 	@RequestMapping(method=RequestMethod.PUT, value="/Users/{id}", produces = "application/json")
-	public void update(@RequestBody User user,@PathVariable int id) throws UserControllerException, UserUpdateException {
+	@ResponseBody
+	public void update(@RequestBody User user,@PathVariable int id,HttpServletResponse response) throws UserControllerException, UserUpdateException {
 		
 		User user_original = null ;
 		try {
 			user_original = userRepo.findById(id).get();
+			response.setStatus(HttpStatus.CREATED.value());
+			response.setHeader("LOCATION","http://localhost/Users/"+id);
 
 		} catch (Exception exception) {
 			logger.error("Can not find the user = "+id+" in the database");
@@ -95,10 +108,14 @@ public class UserController {
 		logger.info("User with id = "+id +" has been updated to the database successfully");
 	}
 	@RequestMapping(method=RequestMethod.DELETE, value="/Users/{id}", produces = "application/json")
-	public void delete(@PathVariable int id) throws UserDeleteException {
+	@ResponseBody
+	public void delete(@PathVariable int id,HttpServletResponse response) throws UserDeleteException {
 
 		try {
 			userRepo.deleteById(id);
+			response.setStatus(HttpStatus.NO_CONTENT.value());
+			response.setHeader("LOCATION","http://localhost/Users/"+id);
+
 		} catch(Exception exception){
 			logger.error("Can not delete user with id = "+ id +" from the database");
 			throw new UserDeleteException("Cannot Delete user with id= "+ id +" from the database") ;
