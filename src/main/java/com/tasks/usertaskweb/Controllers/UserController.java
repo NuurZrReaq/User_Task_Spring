@@ -83,7 +83,7 @@ public class UserController {
 	@RequestMapping(method=RequestMethod.PUT, value="/Users/{id}", produces = "application/json")
 	@ResponseBody
 	public void update(@RequestBody User user,@PathVariable int id,HttpServletResponse response) throws UserControllerException, UserUpdateException {
-		
+
 		User user_original = null ;
 		try {
 			user_original = userRepo.findById(id).get();
