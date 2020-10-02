@@ -26,10 +26,12 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
+import javax.annotation.sql.DataSourceDefinition;
 import java.util.*;
 
 @ContextConfiguration(classes=UserTasks1Application.class)
 //@SpringBootTest
+
 @ExtendWith(SpringExtension.class)
 @WebMvcTest({UserController.class,TaskController.class})
 class UserTasks1ApplicationTests {
@@ -39,11 +41,13 @@ class UserTasks1ApplicationTests {
 
 	User mockUser1 = new User(1,"Noor","noor.zreaq@gmail.com","ada",18,null);
 	User mockUser2 = new User(2,"nooraldeen","nnnnn@nn.com","adsdasdsa",12,null);
-	User user = new User(3,"nooraldeen","nnnnn@nn.com","adsdasdsa",12,null);
+	User user = new User(1,"nooraldeen","nnnnn@nn.com","adsdasdsa",12,null);
+
 	List<User> mockUsers = new ArrayList<User>();
 	Task mockTask = new Task (1,"description1",true,null);
 	Task mockTask2 = new Task (2,"description2",true,null);
-	Task task = new Task(3,"description2",true,null);
+	Task task = new Task(1,"description2",true,null);
+
 	List<Task> mockTasks = new ArrayList<Task>();
 
 
@@ -113,15 +117,16 @@ class UserTasks1ApplicationTests {
 	}
 	@Test
 	public void updateUserTest() throws Exception{
-		//mockUsers.add(mockUser1);
+
 		String body = objectMapper.writeValueAsString(user);
+		Mockito.when(userRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(mockUser1));
 		Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
 		RequestBuilder requestBuilder =MockMvcRequestBuilders.put("/Users/1").
 				accept(MediaType.APPLICATION_JSON).content(body).contentType(MediaType.APPLICATION_JSON).characterEncoding("utf-8");
 
 		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
 		MockHttpServletResponse response = result.getResponse();
-		//assertEquals(HttpStatus.CREATED.value(),response.getStatus());
+		assertEquals(HttpStatus.CREATED.value(),response.getStatus());
 		assertEquals("http://localhost/Users/"+mockUser1.getId(),response.getHeader(HttpHeaders.LOCATION));
 	}
 
@@ -161,7 +166,8 @@ class UserTasks1ApplicationTests {
 	@Test
 	public void updateTaskTest () throws Exception {
 		String body = objectMapper.writeValueAsString(task);
-		Mockito.when(taskRepository.save(Mockito.any(Task.class))).thenReturn(mockTask);
+		Mockito.when(taskRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(mockTask));
+		Mockito.when(taskRepository.save(Mockito.any(Task.class))).thenReturn(task);
 		RequestBuilder requestBuilder =MockMvcRequestBuilders.put("/Tasks/1").
 				accept(MediaType.APPLICATION_JSON).content(body).contentType(MediaType.APPLICATION_JSON).characterEncoding("utf-8");
 
