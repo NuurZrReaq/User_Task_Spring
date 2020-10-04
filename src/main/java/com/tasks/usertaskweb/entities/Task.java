@@ -5,14 +5,12 @@ import javax.persistence.*;
 
 @Entity
 public class Task {
-
-	private String description;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	private String description;
 	private boolean completed;
 	@ManyToOne(optional = false,fetch = FetchType.EAGER)
-	//@JoinColumn(foreignKey = @ForeignKey(name = "user_id"))
 	@JoinColumn(name = "user_id")
 	private User user;
 
@@ -26,11 +24,6 @@ public class Task {
 	public Task() {
 	}
 
-	public Task(String description, boolean completed, User user) {
-		this.description = description;
-		this.completed = completed;
-		this.user = user;
-	}
 
 	public String getDescription() {
 		return description;
@@ -42,10 +35,6 @@ public class Task {
 
 	public int getId() {
 		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
 	}
 
 	public boolean isCompleted() {

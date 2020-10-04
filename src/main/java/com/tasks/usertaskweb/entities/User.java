@@ -14,8 +14,6 @@ public class User {
 	private String password;
 	private int age;
 	@OneToMany(mappedBy = "user",cascade=CascadeType.REMOVE, fetch = FetchType.LAZY)
-
-
 	private Set<Task> tasks;
 
 	public User(){
@@ -29,13 +27,7 @@ public class User {
 		this.tasks = tasks;
 	}
 
-	public User(String name, String email, String password, int age, Set<Task> tasks) {
-		this.name = name;
-		this.email = email;
-		this.password = password;
-		this.age = age;
-		this.tasks = tasks;
-	}
+
 
 	public int getId() {
 		return id;
@@ -84,7 +76,5 @@ public class User {
 	public void setTasks(Set<Task> tasks) {
 		this.tasks = tasks;
 	}
-	public void addTask(Task tasks) {
-		this.tasks.add(tasks);
-	}
+
 }

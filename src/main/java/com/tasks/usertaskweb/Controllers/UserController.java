@@ -19,11 +19,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 public class UserController {
-	
+
 	@Autowired
 	UserRepository userRepo;
 	Logger logger = LoggerFactory.getLogger(UserController.class);
-	
+
 	@RequestMapping(method=RequestMethod.GET,value="/Users")
 	@ResponseBody
 	public List<User> getUsers (HttpServletResponse response) throws Exception {
@@ -39,7 +39,7 @@ public class UserController {
 		logger.info("List of Users have been got from the database");
 		return users;
 
-		
+
 
 	}
 	@RequestMapping(method=RequestMethod.GET,value="/Users/{id}")
@@ -59,9 +59,9 @@ public class UserController {
 
 
 
-		
+
 	}
-	
+
 	@RequestMapping(method=RequestMethod.POST, value="/Users", produces = "application/json")
 	@ResponseBody
 	public void insert(@RequestBody User user,HttpServletResponse response) throws UserUpdateException {
@@ -79,7 +79,7 @@ public class UserController {
 		logger.info("User with id = " + user.getId() + " is inserted successfully");
 
 	}
-	
+
 	@RequestMapping(method=RequestMethod.PUT, value="/Users/{id}", produces = "application/json")
 	@ResponseBody
 	public void update(@RequestBody User user,@PathVariable int id,HttpServletResponse response) throws UserControllerException, UserUpdateException {

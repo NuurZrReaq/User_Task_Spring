@@ -18,11 +18,12 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 public class TaskController {
-	
+
 	@Autowired
 	TaskRepository taskRepo;
+
 	Logger logger = LoggerFactory.getLogger(TaskController.class);
-	
+
 	@RequestMapping(method=RequestMethod.GET,value="/Tasks")
 	@ResponseBody
 	public List<Task> getTasks  (HttpServletResponse response) throws TaskGettingException {
@@ -37,14 +38,14 @@ public class TaskController {
 		}
 		logger.info("All tasks was received successfully");
 		return tasks;
-		
+
 	}
 	@RequestMapping(method=RequestMethod.GET,value="/Tasks/{id}")
 	@ResponseBody
 	public Task getTaskById( @PathVariable("id")  int id,HttpServletResponse response) throws TaskGettingException {
 		Task task = null;
 		try {
-			task = taskRepo.findById(id).get();
+			task = taskRepo.getTaskByID(id);
 			response.setHeader("LOCATION","http://localhost/Tasks/"+id);
 			response.setStatus(HttpStatus.OK.value());
 
@@ -61,6 +62,7 @@ public class TaskController {
 	public void insert(@RequestBody Task task,HttpServletResponse response) throws TaskUpdateException {
 
 		try{
+			logger.info(task.getDescription()+" .. .. "+task.getId()+" .. .. "+task.isCompleted()+" .. .. "+task.getUser());
 			taskRepo.save(task);
 			response.setHeader("LOCATION","http://localhost/Tasks");
 			response.setStatus(HttpStatus.CREATED.value());
@@ -68,7 +70,7 @@ public class TaskController {
 			logger.error("Insertion of the new task failed");
 			throw new TaskUpdateException("can not insert task with id= " + task.getId()+ " into the database");
 		}
-			logger.info("Task with id = " + task.getId() + " is inserted successfully");
+		logger.info("Task with id = " + task.getId() + " is inserted successfully");
 
 	}
 
@@ -96,9 +98,6 @@ public class TaskController {
 			throw new TaskUpdateException("Cannot update task with id "+ id + " into the database");
 		}
 		logger.info("Task with id = "+id +" is updated to the database successfully");
-
-		//I can not think of it
-
 	}
 
 	@RequestMapping(method=RequestMethod.DELETE, value="/Tasks/{id}", produces = "application/json")
@@ -116,7 +115,7 @@ public class TaskController {
 
 		logger.info("Task with id = "+id+" is deleted from the database successfully");
 	}
-	
-	
+
+
 
 }
