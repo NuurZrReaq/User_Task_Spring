@@ -45,7 +45,7 @@ public class TaskController {
 	public Task getTaskById( @PathVariable("id")  int id,HttpServletResponse response) throws TaskGettingException {
 		Task task = null;
 		try {
-			task = taskRepo.getTaskByID(id);
+			task = taskRepo.getTaskById(id);
 			response.setHeader("LOCATION","http://localhost/Tasks/"+id);
 			response.setStatus(HttpStatus.OK.value());
 
