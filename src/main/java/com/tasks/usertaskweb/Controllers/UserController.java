@@ -3,13 +3,24 @@ package com.tasks.usertaskweb.Controllers;
 
 import java.util.List;
 
+import Services.JwtUtil;
+import Services.MyUserDetailsService;
+import com.tasks.usertaskweb.Configuration.MyUserDetails;
 import com.tasks.usertaskweb.Exceptions.UserControllerException;
 import com.tasks.usertaskweb.Exceptions.UserDeleteException;
 import com.tasks.usertaskweb.Exceptions.UserUpdateException;
+import com.tasks.usertaskweb.Models.AuthenticationRequest;
+import com.tasks.usertaskweb.Models.AuthenticationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import com.tasks.usertaskweb.Models.User;
 import com.tasks.usertaskweb.repos.UserRepository;
@@ -19,10 +30,30 @@ import javax.servlet.http.HttpServletResponse;
 @RestController
 public class UserController {
 
+	@Qualifier("authenticationManagerBean")
+	@Autowired
+	AuthenticationManager authenticationManager;
+	@Autowired
+	MyUserDetailsService userDetailsService;
+	@Autowired
+	JwtUtil jwtToken;
 	@Autowired
 	UserRepository userRepo;
 	Logger logger = LoggerFactory.getLogger(UserController.class);
 
+	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+	public ResponseEntity<AuthenticationResponse> createAuthToken(@RequestBody AuthenticationRequest request ) throws Exception {
+		try {
+			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken
+					(request.getId(), request.getPassword()));
+		} catch (BadCredentialsException e) {
+			throw new Exception("Bad Credentials");
+		}
+		final UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(request.getId()));
+
+		final String jwt = jwtToken.generateToken(userDetails);
+		return ResponseEntity.ok(new AuthenticationResponse(jwt));
+	}
 	@RequestMapping(method=RequestMethod.GET,value="/Users")
 	@ResponseBody
 	public List<User> getUsers (HttpServletResponse response) throws Exception {
