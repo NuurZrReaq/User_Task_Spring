@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import com.tasks.usertaskweb.entities.Task;
+import com.tasks.usertaskweb.Models.Task;
 import com.tasks.usertaskweb.repos.TaskRepository;
 
 import javax.servlet.http.HttpServletResponse;
@@ -59,11 +59,15 @@ public class TaskController {
 	}
 	@RequestMapping(method=RequestMethod.POST, value="/Tasks", produces = "application/json")
 	@ResponseBody
+
 	public void insert(@RequestBody Task task,HttpServletResponse response) throws TaskUpdateException {
 
 		try{
 			logger.info(task.getDescription()+" .. .. "+task.getId()+" .. .. "+task.isCompleted()+" .. .. "+task.getUser());
-			taskRepo.save(task);
+			if(task != null) taskRepo.save(task);
+			else {
+				logger.info("NULL----------------------------------------->");
+			}
 			response.setHeader("LOCATION","http://localhost/Tasks");
 			response.setStatus(HttpStatus.CREATED.value());
 		} catch (Exception exception){
@@ -76,10 +80,10 @@ public class TaskController {
 
 	@RequestMapping(method=RequestMethod.PUT, value="/Tasks/{id}", produces = "application/json")
 	@ResponseBody
-	public void update(@RequestBody Task task,HttpServletResponse response,@PathVariable ("id") int id) throws TaskGettingException, TaskUpdateException {
+	public void update(@RequestBody Task task,@PathVariable ("id") int id,HttpServletResponse response) throws TaskGettingException, TaskUpdateException {
 		Task original_Task = null;
 		try {
-			original_Task = taskRepo.findById(id).get();
+			original_Task = taskRepo.getTaskById(id);
 			response.setHeader("LOCATION","http://localhost/Tasks/"+id);
 			response.setStatus(HttpStatus.CREATED.value());
 

@@ -1,4 +1,4 @@
-package com.tasks.usertaskweb.entities;
+package com.tasks.usertaskweb.Models;
 
 import java.util.Set;
 

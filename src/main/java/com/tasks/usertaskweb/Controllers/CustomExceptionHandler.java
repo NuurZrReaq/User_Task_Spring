@@ -1,7 +1,7 @@
 package com.tasks.usertaskweb.Controllers;
 
 import com.tasks.usertaskweb.Exceptions.*;
-import com.tasks.usertaskweb.entities.ErrorMessage;
+import com.tasks.usertaskweb.Models.ErrorMessage;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

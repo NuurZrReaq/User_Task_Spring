@@ -2,8 +2,8 @@ package com.tasks.usertaskweb;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tasks.usertaskweb.Controllers.TaskController;
 import com.tasks.usertaskweb.Controllers.UserController;
-import com.tasks.usertaskweb.entities.Task;
-import com.tasks.usertaskweb.entities.User;
+import com.tasks.usertaskweb.Models.Task;
+import com.tasks.usertaskweb.Models.User;
 import com.tasks.usertaskweb.repos.TaskRepository;
 import com.tasks.usertaskweb.repos.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,6 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
-import javax.annotation.sql.DataSourceDefinition;
 import java.util.*;
 
 @ContextConfiguration(classes=UserTasks1Application.class)

@@ -1,4 +1,4 @@
-package com.tasks.usertaskweb.entities;
+package com.tasks.usertaskweb.Models;
 
 import javax.persistence.*;
 
@@ -10,7 +10,7 @@ public class Task {
 	private int id;
 	private String description;
 	private boolean completed;
-	@ManyToOne(optional = false,fetch = FetchType.EAGER)
+	@ManyToOne(optional = false,fetch = FetchType.EAGER,cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "user_id")
 	private User user;
 
