@@ -10,7 +10,7 @@ public class Task {
 	private int id;
 	private String description;
 	private boolean completed;
-	@ManyToOne(optional = false,fetch = FetchType.EAGER,cascade = CascadeType.REMOVE)
+	@ManyToOne(optional = false,fetch = FetchType.EAGER,cascade = CascadeType.ALL)
 	@JoinColumn(name = "user_id")
 	private User user;
 
