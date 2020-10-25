@@ -2,7 +2,7 @@ package com.tasks.usertaskweb.controllers;
 
 
 import java.util.*;
-import services.JwtUtil;
+import com.tasks.usertaskweb.services.JwtUtil;
 import com.tasks.usertaskweb.exceptions.NotAuthorizedException;
 import com.tasks.usertaskweb.exceptions.TaskDeleteException;
 import com.tasks.usertaskweb.exceptions.TaskGettingException;

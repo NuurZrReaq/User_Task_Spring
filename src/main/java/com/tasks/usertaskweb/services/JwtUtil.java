@@ -1,4 +1,4 @@
-package services;
+package com.tasks.usertaskweb.services;
 
 import com.tasks.usertaskweb.configuration.MyUserDetails;
 import io.jsonwebtoken.Claims;

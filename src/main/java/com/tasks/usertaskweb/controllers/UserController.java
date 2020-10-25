@@ -1,8 +1,8 @@
 package com.tasks.usertaskweb.controllers;
 
 import java.util.List;
-import services.JwtUtil;
-import services.MyUserDetailsService;
+import com.tasks.usertaskweb.services.JwtUtil;
+import com.tasks.usertaskweb.services.MyUserDetailsService;
 import com.tasks.usertaskweb.exceptions.UserControllerException;
 import com.tasks.usertaskweb.exceptions.UserDeleteException;
 import com.tasks.usertaskweb.exceptions.UserUpdateException;
@@ -33,6 +33,7 @@ public class UserController {
 	@Autowired
 	MyUserDetailsService userDetailsService;
 
+	@Qualifier("jwtUtilBean")
 	@Autowired
 	JwtUtil jwtToken;
 
@@ -153,6 +154,5 @@ public class UserController {
 		}
 		logger.info("User with id = "+id+" is deleted from the database successfully");
 	}
-
 
 }

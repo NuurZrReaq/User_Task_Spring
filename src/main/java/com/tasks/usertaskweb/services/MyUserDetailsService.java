@@ -1,4 +1,4 @@
-package services;
+package com.tasks.usertaskweb.services;
 
 import com.tasks.usertaskweb.configuration.MyUserDetails;
 import com.tasks.usertaskweb.models.User;
@@ -7,10 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-
+@Component
 public class MyUserDetailsService implements UserDetailsService {
 
     @Autowired

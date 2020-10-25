@@ -1,7 +1,7 @@
 package com.tasks.usertaskweb.filters;
 
 import com.tasks.usertaskweb.configuration.MyUserDetails;
-import services.JwtUtil;
+import com.tasks.usertaskweb.services.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,7 +22,8 @@ public class JwtFilter extends OncePerRequestFilter{
     @Autowired
     JwtUtil jwtUtil;
 
-    @Qualifier("getUserDetailsService")
+
+    @Qualifier("myUserDetailsService")
     @Autowired
     UserDetailsService userDetailsService;
 

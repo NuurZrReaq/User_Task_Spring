@@ -1,7 +1,7 @@
 package com.tasks.usertaskweb.configuration;
 
-import services.JwtUtil;
-import services.MyUserDetailsService;
+import com.tasks.usertaskweb.services.JwtUtil;
+import com.tasks.usertaskweb.services.MyUserDetailsService;
 import com.tasks.usertaskweb.filters.JwtFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,10 +50,7 @@ public class SecurityConfiguration  extends WebSecurityConfigurerAdapter{
         return NoOpPasswordEncoder.getInstance();
     }
 
-    @Bean
-    public MyUserDetailsService getUserDetailsService(){
-        return new MyUserDetailsService();
-    }
+
 
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
