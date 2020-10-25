@@ -1,11 +1,11 @@
-package com.tasks.usertaskweb.Models;
+package com.tasks.usertaskweb.models;
 
 public class AuthenticationResponse {
+
     private final String jwt ;
 
     public AuthenticationResponse(String jwt) {
         this.jwt = jwt;
-
     }
 
     public String getJwt() {

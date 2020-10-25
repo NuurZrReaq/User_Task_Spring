@@ -1,11 +1,11 @@
 package com.tasks.usertaskweb;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tasks.usertaskweb.Controllers.TaskController;
-import com.tasks.usertaskweb.Controllers.UserController;
-import com.tasks.usertaskweb.Models.Task;
-import com.tasks.usertaskweb.Models.User;
-import com.tasks.usertaskweb.repos.TaskRepository;
-import com.tasks.usertaskweb.repos.UserRepository;
+import com.tasks.usertaskweb.controllers.TaskController;
+import com.tasks.usertaskweb.controllers.UserController;
+import com.tasks.usertaskweb.models.Task;
+import com.tasks.usertaskweb.models.User;
+import com.tasks.usertaskweb.repositories.TaskRepository;
+import com.tasks.usertaskweb.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.*;

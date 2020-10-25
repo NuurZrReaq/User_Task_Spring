@@ -1,4 +1,4 @@
-package com.tasks.usertaskweb.Exceptions;
+package com.tasks.usertaskweb.exceptions;
 
 public class TaskUpdateException extends Exception {
 

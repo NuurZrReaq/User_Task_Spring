@@ -1,26 +1,28 @@
-package com.tasks.usertaskweb.Configuration;
+package com.tasks.usertaskweb.configuration;
 
-import com.tasks.usertaskweb.Models.User;
+import com.tasks.usertaskweb.models.User;
 import org.springframework.security.core.GrantedAuthority;
-
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 
 public class MyUserDetails implements UserDetails
 {
 
-
     private int userId;
     private String password;
+
     public MyUserDetails() {
     }
+
     public MyUserDetails(User user) {
         this.userId = user.getId();
         this.password = user.getPassword();
+    }
+
+    public int getUserId() {
+        return userId;
     }
 
     @Override
@@ -28,17 +30,6 @@ public class MyUserDetails implements UserDetails
         return Arrays.asList(new SimpleGrantedAuthority("User"));
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
     @Override
     public String getPassword() {
         return password;

@@ -1,4 +1,4 @@
-package com.tasks.usertaskweb.Models;
+package com.tasks.usertaskweb.models;
 
 import javax.persistence.*;
 
@@ -7,12 +7,17 @@ import javax.persistence.*;
 public class Task {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+
 	private int id;
 	private String description;
 	private boolean completed;
-	@ManyToOne(optional = false,fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+
+	@ManyToOne(optional = false,fetch = FetchType.EAGER)
 	@JoinColumn(name = "user_id")
 	private User user;
+
+	public Task() {
+	}
 
 	public Task(int id,String description,  boolean completed, User user) {
 		this.description = description;
@@ -20,10 +25,6 @@ public class Task {
 		this.user = user;
 		this.id = id;
 	}
-
-	public Task() {
-	}
-
 
 	public String getDescription() {
 		return description;

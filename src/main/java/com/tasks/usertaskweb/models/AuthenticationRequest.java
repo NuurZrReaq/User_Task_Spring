@@ -1,4 +1,4 @@
-package com.tasks.usertaskweb.Models;
+package com.tasks.usertaskweb.models;
 
 public class AuthenticationRequest {
 

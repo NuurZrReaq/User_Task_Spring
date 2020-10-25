@@ -1,22 +1,21 @@
-package com.tasks.usertaskweb.Controllers;
+package com.tasks.usertaskweb.controllers;
 
 
-import java.util.List;
-import java.util.Optional;
-
-import Services.JwtUtil;
-import com.tasks.usertaskweb.Exceptions.TaskDeleteException;
-import com.tasks.usertaskweb.Exceptions.TaskGettingException;
-import com.tasks.usertaskweb.Exceptions.TaskUpdateException;
+import java.util.*;
+import services.JwtUtil;
+import com.tasks.usertaskweb.exceptions.NotAuthorizedException;
+import com.tasks.usertaskweb.exceptions.TaskDeleteException;
+import com.tasks.usertaskweb.exceptions.TaskGettingException;
+import com.tasks.usertaskweb.exceptions.TaskUpdateException;
+import com.tasks.usertaskweb.models.User;
+import com.tasks.usertaskweb.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import com.tasks.usertaskweb.Models.Task;
-import com.tasks.usertaskweb.repos.TaskRepository;
-
+import com.tasks.usertaskweb.models.Task;
+import com.tasks.usertaskweb.repositories.TaskRepository;
 import javax.servlet.http.HttpServletResponse;
 
 
@@ -24,18 +23,28 @@ import javax.servlet.http.HttpServletResponse;
 public class TaskController {
 
 	@Autowired
-	TaskRepository taskRepo;
+	TaskRepository taskRepository;
+
 	@Autowired
 	JwtUtil jwtUtil;
 
+	@Autowired
+	UserRepository userRepository;
+
 	Logger logger = LoggerFactory.getLogger(TaskController.class);
+
 
 	@RequestMapping(method=RequestMethod.GET,value="/Tasks")
 	@ResponseBody
-	public List<Task> getTasks  (HttpServletResponse response) throws TaskGettingException {
+	public List<Task> getTasks (HttpServletResponse response,@RequestHeader("Authorization" )String header)
+			throws TaskGettingException {
+
 		List<Task> tasks = null;
+		String jwt =header.substring(7);
+		int userId = Integer.valueOf(jwtUtil.extractUserId(jwt));
 		try{
-			tasks = taskRepo.getAllTasks();
+			User user = userRepository.findById(userId).get();
+			tasks = user.retrieveTasks();
 			response.setStatus(HttpStatus.OK.value());
 			response.setHeader("LOCATION","http://localhost/Tasks");
 		} catch (Exception exception) {
@@ -44,55 +53,58 @@ public class TaskController {
 		}
 		logger.info("All tasks was received successfully");
 		return tasks;
-
 	}
+
 	@RequestMapping(method=RequestMethod.GET,value="/Tasks/{id}")
 	@ResponseBody
 	public Task getTaskById(@PathVariable("id")  int id, HttpServletResponse response,
-							@RequestHeader("Authorization") String auth) throws TaskGettingException {
+							@RequestHeader("Authorization") String header)
+			throws TaskGettingException,NotAuthorizedException {
 
 		Task task = null;
-		String jwt = auth.substring(7);
-		int userId = Integer.valueOf(jwtUtil.extractUsername(jwt));
+		String jwt = header.substring(7);
+		int userId = Integer.valueOf(jwtUtil.extractUserId(jwt));
 
 
 		try {
-			task = taskRepo.getTaskById(id);
+			task = taskRepository.getTaskById(id);
 			if(task.getUser() == null) {
-				throw new Exception("it is not your task");
+				throw new NotAuthorizedException("");
 			}
 			if(task != null) {
 				if(userId != task.getUser().getId()){
-					throw new Exception("it is not your task");
+					throw new NotAuthorizedException("");
 				}
 			}
 			response.setHeader("LOCATION","http://localhost/Tasks/"+id);
 			response.setStatus(HttpStatus.OK.value());
 
-		} catch(Exception exception) {
+		}catch (NotAuthorizedException exception){
+			logger.error("Unauthorized access");
+				throw new NotAuthorizedException("Unauthorized Access");
+		}
+		catch(Exception exception) {
 			logger.error("Can not get task with id = "+ id +" from database ");
-			throw new TaskGettingException("Cannot get task with id "+ id +" from database because " + exception.getMessage());
+			throw new TaskGettingException("Cannot get task with id "+ id +" from database because "
+					+ exception.getMessage());
 		}
 
 		logger.info(" Task with id = "+ id +" got extracted from the Database");
 		return task;
 	}
+
 	@RequestMapping(method=RequestMethod.POST, value="/Tasks", produces = "application/json")
 	@ResponseBody
-
 	public void insert(@RequestBody Task task,HttpServletResponse response,
-					   @RequestHeader("Authorization") String auth) throws TaskUpdateException {
-
-		String jwt = auth.substring(7);
-		int userId = Integer.valueOf(jwtUtil.extractUsername(jwt));
+					   @RequestHeader("Authorization") String header) throws TaskUpdateException,NotAuthorizedException {
+		User user = null;
+		String jwt = header.substring(7);
+		int userId = Integer.valueOf(jwtUtil.extractUserId(jwt));
 		try{
-			if(task!= null) {
-				if(task.getUser() ==null || userId != task.getUser().getId()) {
-					throw new Exception("because ypu are not allowed");
-				}
-			}
-			taskRepo.save(task);
 
+			user =userRepository.findById(userId).get();
+			task.setUser(user);
+			taskRepository.save(task);
 			response.setHeader("LOCATION","http://localhost/Tasks");
 			response.setStatus(HttpStatus.CREATED.value());
 		} catch (Exception exception){
@@ -107,32 +119,38 @@ public class TaskController {
 	@RequestMapping(method=RequestMethod.PUT, value="/Tasks/{id}", produces = "application/json")
 	@ResponseBody
 	public void update(@RequestBody Task task,@PathVariable ("id") int id,HttpServletResponse response,
-					   @RequestHeader("Authorization") String auth) throws TaskGettingException, TaskUpdateException {
+					   @RequestHeader("Authorization") String header)
+			throws TaskGettingException, TaskUpdateException, NotAuthorizedException {
+
 		Task original_Task = null;
 		try {
-			original_Task = taskRepo.getTaskById(id);
+			original_Task = taskRepository.getTaskById(id);
 			response.setHeader("LOCATION","http://localhost/Tasks/"+id);
 			response.setStatus(HttpStatus.CREATED.value());
 
 		} catch (Exception exception) {
 			logger.error("Can not find the task = "+id+" in the database");
-			throw new TaskGettingException("Connot find task with id " + id + " in the database");
+			throw new TaskGettingException("Cannot find task with id " + id + " in the database");
 		}
-		String jwt = auth.substring(7);
-		int userId = Integer.valueOf(jwtUtil.extractUsername(jwt));
-
+		String jwt = header.substring(7);
+		int userId = Integer.valueOf(jwtUtil.extractUserId(jwt));
 		logger.info("Task with Id = " + id+" is found in the database and is ready to be updated");
 		original_Task.setCompleted(task.isCompleted());
 		original_Task.setDescription(task.getDescription());
-		original_Task.setUser(task.getUser());
+
 		try{
 			if(original_Task != null){
 				if(original_Task.getUser() == null || userId != original_Task.getUser().getId()) {
-					throw new Exception("It is not your task");
+					throw new NotAuthorizedException("");
 				}
 			}
-			taskRepo.save(original_Task);
-		} catch (Exception exception) {
+
+			taskRepository.save(original_Task);
+		}catch (NotAuthorizedException exception){
+			logger.error("Unauthorized Access");
+			throw new NotAuthorizedException("Unauthorized Access");
+		}
+		catch (Exception exception) {
 			logger.error("can not update the task "+id+" to the database");
 			throw new TaskUpdateException("Cannot update task with id "+ id + " into the database because "+
 					exception.getMessage());
@@ -143,27 +161,33 @@ public class TaskController {
 	@RequestMapping(method=RequestMethod.DELETE, value="/Tasks/{id}", produces = "application/json")
 	@ResponseBody
 	public void delete(HttpServletResponse response,@PathVariable("id")  int id,
-					   @RequestHeader("Authorization") String auth) throws TaskDeleteException {
+					   @RequestHeader("Authorization") String header)
+			throws TaskDeleteException, NotAuthorizedException {
 
-		String jwt = auth.substring(7);
-		int userId = Integer.valueOf(jwtUtil.extractUsername(jwt));
+		String jwt = header.substring(7);
+		int userId = Integer.valueOf(jwtUtil.extractUserId(jwt));
 		Task task = null;
 		try {
-			task = taskRepo.getTaskById(id);
+			task = taskRepository.getTaskById(id);
 			if (task.getUser() == null) {
-				throw new Exception("it is not your task");
+				throw new NotAuthorizedException("");
 			}
 			if (task != null) {
 				if (userId != task.getUser().getId()) {
-					throw new Exception("it is not your task");
+					throw new NotAuthorizedException("");
 				}
 			}
-		} catch (Exception exception){
-			throw new TaskDeleteException(" Cannot delete task with id " +id+ " from the database because "+
+		} catch(NotAuthorizedException exception){
+			logger.error("Unauthorized Access");
+			throw new NotAuthorizedException("Unauthorized Access");
+
+		}
+		catch (Exception exception){
+		throw new TaskDeleteException(" Cannot delete task with id " +id+ " from the database because "+
 					exception.getMessage());
 		}
 		try{
-			taskRepo.deleteById(id);
+			taskRepository.deleteTaskById(id);
 			response.setHeader("LOCATION","http://localhost/Tasks/"+id);
 			response.setStatus(HttpStatus.NO_CONTENT.value());
 		} catch (Exception exception) {
@@ -173,7 +197,5 @@ public class TaskController {
 
 		logger.info("Task with id = "+id+" is deleted from the database successfully");
 	}
-
-
 
 }

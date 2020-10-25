@@ -1,16 +1,13 @@
-package com.tasks.usertaskweb.Controllers;
-
+package com.tasks.usertaskweb.controllers;
 
 import java.util.List;
-
-import Services.JwtUtil;
-import Services.MyUserDetailsService;
-import com.tasks.usertaskweb.Configuration.MyUserDetails;
-import com.tasks.usertaskweb.Exceptions.UserControllerException;
-import com.tasks.usertaskweb.Exceptions.UserDeleteException;
-import com.tasks.usertaskweb.Exceptions.UserUpdateException;
-import com.tasks.usertaskweb.Models.AuthenticationRequest;
-import com.tasks.usertaskweb.Models.AuthenticationResponse;
+import services.JwtUtil;
+import services.MyUserDetailsService;
+import com.tasks.usertaskweb.exceptions.UserControllerException;
+import com.tasks.usertaskweb.exceptions.UserDeleteException;
+import com.tasks.usertaskweb.exceptions.UserUpdateException;
+import com.tasks.usertaskweb.models.AuthenticationRequest;
+import com.tasks.usertaskweb.models.AuthenticationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +19,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import com.tasks.usertaskweb.Models.User;
-import com.tasks.usertaskweb.repos.UserRepository;
-
+import com.tasks.usertaskweb.models.User;
+import com.tasks.usertaskweb.repositories.UserRepository;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
@@ -33,19 +29,27 @@ public class UserController {
 	@Qualifier("authenticationManagerBean")
 	@Autowired
 	AuthenticationManager authenticationManager;
+
 	@Autowired
 	MyUserDetailsService userDetailsService;
+
 	@Autowired
 	JwtUtil jwtToken;
+
 	@Autowired
-	UserRepository userRepo;
+	UserRepository userRepository;
+
 	Logger logger = LoggerFactory.getLogger(UserController.class);
 
+
 	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-	public ResponseEntity<AuthenticationResponse> createAuthToken(@RequestBody AuthenticationRequest request ) throws Exception {
+	public ResponseEntity<AuthenticationResponse> createAuthToken(
+			@RequestBody AuthenticationRequest request ) throws Exception {
+
 		try {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken
 					(request.getId(), request.getPassword()));
+
 		} catch (BadCredentialsException e) {
 			throw new Exception("Bad Credentials");
 		}
@@ -54,12 +58,13 @@ public class UserController {
 		final String jwt = jwtToken.generateToken(userDetails);
 		return ResponseEntity.ok(new AuthenticationResponse(jwt));
 	}
+
 	@RequestMapping(method=RequestMethod.GET,value="/Users")
 	@ResponseBody
 	public List<User> getUsers (HttpServletResponse response) throws Exception {
 		List<User> users = null;
 		try {
-			users = userRepo.getAllUsers();
+			users = userRepository.getAllUsers();
 			response.setStatus(HttpStatus.OK.value());
 			response.setHeader("LOCATION","http://localhost/Users");
 		} catch (Exception exception) {
@@ -68,16 +73,14 @@ public class UserController {
 		}
 		logger.info("List of Users have been got from the database");
 		return users;
-
-
-
 	}
+
 	@RequestMapping(method=RequestMethod.GET,value="/Users/{id}")
 	@ResponseBody
 	public User getUserById(@PathVariable int id,HttpServletResponse response) throws UserControllerException {
 		User user = null;
 		try {
-			user = userRepo.findById(id).get();
+			user = userRepository.findById(id).get();
 			response.setStatus(HttpStatus.OK.value());
 			response.setHeader("LOCATION","http://localhost/Users/"+id);
 		} catch (Exception exception){
@@ -86,10 +89,6 @@ public class UserController {
 		}
 		logger.info(" User with id = "+ id +" got extracted from the Database");
 		return user;
-
-
-
-
 	}
 
 	@RequestMapping(method=RequestMethod.POST, value="/Users", produces = "application/json")
@@ -97,26 +96,27 @@ public class UserController {
 	public void insert(@RequestBody User user,HttpServletResponse response) throws UserUpdateException {
 
 		try{
-			userRepo.save(user);
+			userRepository.save(user);
 			response.setStatus(HttpStatus.CREATED.value());
 			response.setHeader("LOCATION","http://localhost/Users");
 
 
 		} catch (Exception exception){
 			logger.error("Insertion of the new user failed");
-			throw new UserUpdateException("Cannot update user with name = "+ user.getName() +" and id = "+user.getId()+" to the database");
+			throw new UserUpdateException("Cannot update user with name = "+ user.getName() +
+					" and id = "+user.getId()+" to the database");
 		}
 		logger.info("User with id = " + user.getId() + " is inserted successfully");
-
 	}
 
 	@RequestMapping(method=RequestMethod.PUT, value="/Users/{id}", produces = "application/json")
 	@ResponseBody
-	public void update(@RequestBody User user,@PathVariable int id,HttpServletResponse response) throws UserControllerException, UserUpdateException {
+	public void update(@RequestBody User user,@PathVariable int id,HttpServletResponse response)
+			throws UserControllerException, UserUpdateException {
 
 		User user_original = null ;
 		try {
-			user_original = userRepo.findById(id).get();
+			user_original = userRepository.findById(id).get();
 			response.setStatus(HttpStatus.CREATED.value());
 			response.setHeader("LOCATION","http://localhost/Users/"+id);
 
@@ -130,19 +130,20 @@ public class UserController {
 		user_original.setPassword(user.getPassword());
 		user_original.setName(user.getName());
 		try {
-			userRepo.save(user_original);
+			userRepository.save(user_original);
 		} catch (Exception exception) {
 			logger.error("can not update the user "+id+" to the database");
 			throw new UserUpdateException("Cannot update user with name = "+ user.getName() +" and id = "+user.getId()+" to the database");
 		}
 		logger.info("User with id = "+id +" has been updated to the database successfully");
 	}
+
 	@RequestMapping(method=RequestMethod.DELETE, value="/Users/{id}", produces = "application/json")
 	@ResponseBody
 	public void delete(@PathVariable int id,HttpServletResponse response) throws UserDeleteException {
 
 		try {
-			userRepo.deleteById(id);
+			userRepository.deleteById(id);
 			response.setStatus(HttpStatus.NO_CONTENT.value());
 			response.setHeader("LOCATION","http://localhost/Users/"+id);
 
@@ -152,5 +153,6 @@ public class UserController {
 		}
 		logger.info("User with id = "+id+" is deleted from the database successfully");
 	}
+
 
 }

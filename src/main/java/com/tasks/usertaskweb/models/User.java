@@ -1,6 +1,6 @@
-package com.tasks.usertaskweb.Models;
+package com.tasks.usertaskweb.models;
 
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.*;
 
@@ -9,16 +9,19 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+
 	private String name;
 	private String email;
 	private String password;
 	private int age;
+
 	@OneToMany(mappedBy = "user",cascade=CascadeType.REMOVE, fetch = FetchType.LAZY)
-	private Set<Task> tasks;
+	private List<Task> tasks;
 
 	public User(){
 	}
-	public User(int id, String name, String email, String password, int age, Set<Task> tasks) {
+
+	public User(int id, String name, String email, String password, int age, List<Task> tasks) {
 		this.id = id;
 		this.name = name;
 		this.email = email;
@@ -27,7 +30,13 @@ public class User {
 		this.tasks = tasks;
 	}
 
+	public void setTasks(List<Task> tasks) {
+		this.tasks = tasks;
+	}
 
+	public List<Task> retrieveTasks(){
+		return this.tasks;
+	}
 
 	public int getId() {
 		return id;
@@ -69,12 +78,6 @@ public class User {
 		this.age = age;
 	}
 
-	public Set<Task> getTasks() {
-		return tasks;
-	}
 
-	public void setTasks(Set<Task> tasks) {
-		this.tasks = tasks;
-	}
 
 }

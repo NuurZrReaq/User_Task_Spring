@@ -1,11 +1,16 @@
-package com.tasks.usertaskweb.Models;
+package com.tasks.usertaskweb.models;
 
 public class ErrorMessage {
-
 
     private int code;
     private String message;
     private String description;
+
+    public ErrorMessage(int code,String message, String description) {
+        this.code =code;
+        this.message = message;
+        this.description = description;
+    }
 
     public int getCode() {
         return code;
@@ -14,7 +19,7 @@ public class ErrorMessage {
     public void setCode(int code) {
         this.code = code;
     }
-//////
+
     public String getMessage() {
         return message;
     }
@@ -31,9 +36,4 @@ public class ErrorMessage {
         this.description = description;
     }
 
-    public ErrorMessage(int code,String message, String description) {
-        this.code =code;
-        this.message = message;
-        this.description = description;
-    }
 }
