@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -23,5 +22,6 @@ public interface TaskRepository extends CrudRepository<Task,Integer> {
     @Transactional
     @Query("delete from Task where id =:id")
     public void deleteTaskById(@Param("id") int id);
+
 
 }

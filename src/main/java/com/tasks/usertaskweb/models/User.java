@@ -15,6 +15,7 @@ public class User {
 	private String password;
 	private int age;
 
+	//Applying the one to many relation between the database objects.
 	@OneToMany(mappedBy = "user",cascade=CascadeType.REMOVE, fetch = FetchType.LAZY)
 	private List<Task> tasks;
 

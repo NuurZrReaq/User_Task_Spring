@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
 
+
     @Query("from User")
     public List<User> getAllUsers();
 

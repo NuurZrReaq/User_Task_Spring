@@ -14,7 +14,8 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    private String SECRET_KEY = "secret";
+    //JWT secret code for encrypting
+    private final String SECRET_KEY = "secret";
 
     public String extractUserId(String token) {
         return extractClaim(token, Claims::getSubject);

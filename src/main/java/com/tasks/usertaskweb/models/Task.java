@@ -12,6 +12,7 @@ public class Task {
 	private String description;
 	private boolean completed;
 
+	//Applying the many to one relation between the database objects
 	@ManyToOne(optional = false,fetch = FetchType.EAGER)
 	@JoinColumn(name = "user_id")
 	private User user;

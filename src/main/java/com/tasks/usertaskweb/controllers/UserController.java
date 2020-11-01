@@ -1,6 +1,8 @@
 package com.tasks.usertaskweb.controllers;
 
 import java.util.List;
+
+import com.tasks.usertaskweb.exceptions.NotAuthorizedException;
 import com.tasks.usertaskweb.services.JwtUtil;
 import com.tasks.usertaskweb.services.MyUserDetailsService;
 import com.tasks.usertaskweb.exceptions.UserControllerException;
@@ -40,7 +42,7 @@ public class UserController {
 	@Autowired
 	UserRepository userRepository;
 
-	Logger logger = LoggerFactory.getLogger(UserController.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
 
 	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
@@ -50,13 +52,16 @@ public class UserController {
 		try {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken
 					(request.getId(), request.getPassword()));
+			LOGGER.info("User with id = " +request.getId()+ " is authenticated successfully");
 
 		} catch (BadCredentialsException e) {
+			LOGGER.error("Bad credentials, couldn't authenticate user with id = "+request.getId());
 			throw new Exception("Bad Credentials");
 		}
 		final UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(request.getId()));
 
 		final String jwt = jwtToken.generateToken(userDetails);
+		LOGGER.info("Generating JWT to be sent to the authenticated user");
 		return ResponseEntity.ok(new AuthenticationResponse(jwt));
 	}
 
@@ -69,26 +74,37 @@ public class UserController {
 			response.setStatus(HttpStatus.OK.value());
 			response.setHeader("LOCATION","http://localhost/Users");
 		} catch (Exception exception) {
-			logger.error("Can not get all users from database");
+			LOGGER.error("Can not get all users from database");
 			throw new UserControllerException("Cannot get users");
 		}
-		logger.info("List of Users have been got from the database");
+		LOGGER.info("List of user have been extracted from the database and sent back");
 		return users;
 	}
 
 	@RequestMapping(method=RequestMethod.GET,value="/Users/{id}")
 	@ResponseBody
-	public User getUserById(@PathVariable int id,HttpServletResponse response) throws UserControllerException {
+	public User getUserById(@PathVariable int id,HttpServletResponse response,
+							@RequestHeader("Authorization") String header) throws NotAuthorizedException, UserControllerException {
 		User user = null;
+		String jwt = header.substring(7);
+		int userId = Integer.parseInt(jwtToken.extractUserId(jwt));
+		LOGGER.info("userId extracted from the JWT in header to authorize the fetch process");
 		try {
+			if(userId != id){
+				throw new NotAuthorizedException("");
+			}
 			user = userRepository.findById(id).get();
 			response.setStatus(HttpStatus.OK.value());
 			response.setHeader("LOCATION","http://localhost/Users/"+id);
+		} catch (NotAuthorizedException exception){
+			LOGGER.error("Unauthorized Process");
+			throw new NotAuthorizedException("Unauthorized user");
+
 		} catch (Exception exception){
-			logger.error("Can not get user with id = "+ id +" from database");
+			LOGGER.error("Can not get user with id = "+ id +" from database");
 			throw new UserControllerException("Cannot find the user with id = " + id +" in database");
 		}
-		logger.info(" User with id = "+ id +" got extracted from the Database");
+		LOGGER.info(" User with id = "+ id +" got extracted from the Database");
 		return user;
 	}
 
@@ -97,62 +113,112 @@ public class UserController {
 	public void insert(@RequestBody User user,HttpServletResponse response) throws UserUpdateException {
 
 		try{
+			if(user.getName().isBlank() || user.getName().isEmpty()){
+				LOGGER.error("Username is either null or blank ");
+				throw new Exception("Username is either blank or empty ");
+			}
+			else if(user.getEmail().isEmpty() || user.getEmail().isBlank()){
+				LOGGER.error("User email is either null or blank ");
+				throw new Exception("User email is either blank or empty ");
+			}
+			else if(user.getPassword().isBlank() || user.getPassword().isEmpty()){
+				LOGGER.error("Password is either null or blank ");
+				throw new Exception("Password is either blank or empty ");
+			}
+			else if(user.getAge() < 0){
+				LOGGER.error("User age is invalid ");
+				throw new Exception("User age is invalid///");
+			}
 			userRepository.save(user);
 			response.setStatus(HttpStatus.CREATED.value());
 			response.setHeader("LOCATION","http://localhost/Users");
 
 
 		} catch (Exception exception){
-			logger.error("Insertion of the new user failed");
-			throw new UserUpdateException("Cannot update user with name = "+ user.getName() +
-					" and id = "+user.getId()+" to the database");
+			LOGGER.error("Insertion of the new user failed");
+			throw new UserUpdateException(" Cannot insert user with id = "+
+					user.getId()+ " to the database, "+ exception.getMessage() );
 		}
-		logger.info("User with id = " + user.getId() + " is inserted successfully");
+		LOGGER.info("User with id = " + user.getId() + " is inserted successfully");
 	}
 
 	@RequestMapping(method=RequestMethod.PUT, value="/Users/{id}", produces = "application/json")
 	@ResponseBody
-	public void update(@RequestBody User user,@PathVariable int id,HttpServletResponse response)
-			throws UserControllerException, UserUpdateException {
+	public void update(@RequestBody User user,@PathVariable int id,HttpServletResponse response,
+					   @RequestHeader("Authorization") String header) throws UserControllerException, UserUpdateException {
 
+		String jwt = header.substring(7);
+		int userId = Integer.valueOf(jwtToken.extractUserId(jwt));
 		User user_original = null ;
 		try {
+			if(userId != id ){
+				throw new NotAuthorizedException("");
+			}
 			user_original = userRepository.findById(id).get();
 			response.setStatus(HttpStatus.CREATED.value());
 			response.setHeader("LOCATION","http://localhost/Users/"+id);
 
-		} catch (Exception exception) {
-			logger.error("Can not find the user = "+id+" in the database");
+		} catch(NotAuthorizedException exception) {
+			LOGGER.error("Update process is not authorized to user with id ="+ userId);
+
+		}catch (Exception exception) {
+			LOGGER.error("Can not find the user = "+id+" in the database");
 			throw new UserControllerException("Cannot find the user with id = " + id +" in database");
 		}
-		logger.info("User with Id = " + id+" is found in the database and is ready to be updated");
+		LOGGER.info("User with Id = " + id+" is found in the database and is ready to be updated");
 		user_original.setAge(user.getAge());
 		user_original.setEmail(user.getEmail());
 		user_original.setPassword(user.getPassword());
 		user_original.setName(user.getName());
 		try {
+			if(user_original.getName().isBlank() || user_original.getName().isEmpty()){
+				LOGGER.error("Username is either null or blank ");
+				throw new Exception("Username is either blank or empty ");
+			}
+			else if(user_original.getEmail().isEmpty() || user_original.getEmail().isBlank()){
+				LOGGER.error("User email is either null or blank ");
+				throw new Exception("User email is either blank or empty ");
+			}
+			else if(user_original.getPassword().isBlank() || user_original.getPassword().isEmpty()){
+				LOGGER.error("Password is either null or blank ");
+				throw new Exception("Password is either blank or empty ");
+			}
+			else if(user_original.getAge() < 0){
+				LOGGER.error("User age is invalid ");
+				throw new Exception("User age is invalid///");
+			}
 			userRepository.save(user_original);
 		} catch (Exception exception) {
-			logger.error("can not update the user "+id+" to the database");
+			LOGGER.error("can not update the user "+id+" to the database");
 			throw new UserUpdateException("Cannot update user with name = "+ user.getName() +" and id = "+user.getId()+" to the database");
 		}
-		logger.info("User with id = "+id +" has been updated to the database successfully");
+		LOGGER.info("User with id = "+id +" has been updated to the database successfully");
 	}
 
 	@RequestMapping(method=RequestMethod.DELETE, value="/Users/{id}", produces = "application/json")
 	@ResponseBody
-	public void delete(@PathVariable int id,HttpServletResponse response) throws UserDeleteException {
+	public void delete(@PathVariable int id,HttpServletResponse response,
+					   @RequestHeader("Authorization") String header) throws NotAuthorizedException, UserDeleteException {
 
+		String jwt = header.substring(7);
+		int userId = Integer.valueOf(jwtToken.extractUserId(jwt));
 		try {
+			if (userId != id){
+				LOGGER.error("User with id = "+userId+" is not authorized to delete user with id = "+id);
+				throw new NotAuthorizedException("");
+			}
 			userRepository.deleteById(id);
 			response.setStatus(HttpStatus.NO_CONTENT.value());
 			response.setHeader("LOCATION","http://localhost/Users/"+id);
 
+		} catch (NotAuthorizedException exception){
+			throw new NotAuthorizedException("Unauthorized deletion process");
+
 		} catch(Exception exception){
-			logger.error("Can not delete user with id = "+ id +" from the database");
+			LOGGER.error("Can not delete user with id = "+ id +" from the database");
 			throw new UserDeleteException("Cannot Delete user with id= "+ id +" from the database") ;
 		}
-		logger.info("User with id = "+id+" is deleted from the database successfully");
+		LOGGER.info("User with id = "+id+" is deleted from the database successfully");
 	}
 
 }

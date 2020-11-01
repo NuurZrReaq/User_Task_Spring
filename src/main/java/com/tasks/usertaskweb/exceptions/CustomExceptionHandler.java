@@ -1,4 +1,4 @@
-package com.tasks.usertaskweb.controllers;
+package com.tasks.usertaskweb.exceptions;
 
 import com.tasks.usertaskweb.exceptions.*;
 import com.tasks.usertaskweb.models.ErrorMessage;

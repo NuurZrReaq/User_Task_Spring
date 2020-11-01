@@ -27,6 +27,7 @@ public class JwtFilter extends OncePerRequestFilter{
     @Autowired
     UserDetailsService userDetailsService;
 
+    //Designing a new filter for authorization purposes
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {

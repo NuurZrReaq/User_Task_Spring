@@ -25,32 +25,35 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration  extends WebSecurityConfigurerAdapter{
 
     @Autowired
-    MyUserDetailsService userDetailsService;
+    MyUserDetailsService myUserDetailsService;
     @Autowired
     JwtFilter jwtFilter;
 
 
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        //Applying authentication where nedded
         http.csrf().disable()
                 .authorizeRequests().antMatchers("/authenticate").permitAll()
                 .anyRequest().authenticated().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+        //Adding a new filter to the filter chain
         http.addFilterBefore(jwtFilter,UsernamePasswordAuthenticationFilter.class);
     }
 
+    // Using database for authentication
     @Override
     public void configure(AuthenticationManagerBuilder authenticationManager) throws Exception {
-        authenticationManager.userDetailsService(userDetailsService);
+        authenticationManager.userDetailsService(myUserDetailsService);
     }
 
+    // Lists of beans
     @Bean
     public PasswordEncoder getPasswordEncoder (){
         return NoOpPasswordEncoder.getInstance();
     }
-
-
 
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {

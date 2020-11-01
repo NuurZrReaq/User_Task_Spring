@@ -2,22 +2,22 @@ package com.tasks.usertaskweb.models;
 
 public class ErrorMessage {
 
-    private int code;
+    private int status;
     private String message;
     private String description;
 
-    public ErrorMessage(int code,String message, String description) {
-        this.code =code;
+    public ErrorMessage(int status,String message, String description) {
+        this.status =status;
         this.message = message;
         this.description = description;
     }
 
-    public int getCode() {
-        return code;
+    public int getStatus() {
+        return status;
     }
 
-    public void setCode(int code) {
-        this.code = code;
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public String getMessage() {
